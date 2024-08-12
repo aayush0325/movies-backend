@@ -31,12 +31,18 @@ bun run db:up
 bunx wrangler d1 execute movies-db --local --file=./drizzle/migrations/<migration file name here>
 ```
 
-7. Start development server
+7. Create a .dev.vars file in the root folder which looks like this
+
+```
+CLERK_SECRET_KEY=<You-secret-key>
+CLERK_PUBLISHABLE_KEY=<Your-publishable-key>
+```
+
+8. Start development server
 
 ```
 bun run dev
 ```
-
 ### Production
 
 1. Apply migrations to D1 database on Cloudflare
