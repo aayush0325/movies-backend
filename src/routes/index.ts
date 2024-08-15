@@ -4,7 +4,11 @@ import moviesRouter from './v1/movies'
 import showTimesRouter from './v1/showtimes'
 import { Hono } from 'hono'
 
-const v1 = new Hono();
+type Bindings = {
+    DB: D1Database
+}
+
+const v1 = new Hono<{Bindings:Bindings}>();
 
 v1.get('/',c => {
     return c.text('V1 API Working')
