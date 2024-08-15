@@ -1,7 +1,11 @@
 import { Hono } from "hono";
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 
-const moviesRouter = new Hono();
+type Bindings = {
+    DB: D1Database
+}
+
+const moviesRouter = new Hono<{Bindings:Bindings}>();
 
 moviesRouter.get('/',c => {
     const auth = getAuth(c);
@@ -12,7 +16,6 @@ moviesRouter.get('/',c => {
     }
     return c.json({
         message: 'You are logged in!',
-        userId: auth.userId,
     })
 })
 

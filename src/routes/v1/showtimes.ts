@@ -1,7 +1,11 @@
 import { clerkMiddleware, getAuth } from '@hono/clerk-auth'
 import { Hono } from 'hono'
 
-const showTimesRouter = new Hono();
+type Bindings = {
+  DB: D1Database
+}
+
+const showTimesRouter = new Hono<{Bindings:Bindings}>();
 
 showTimesRouter.get('/',c => {
     const auth = getAuth(c);
@@ -12,7 +16,6 @@ showTimesRouter.get('/',c => {
     }
     return c.json({
         message: 'You are logged in!',
-        userId: auth.userId,
     })
 })
 
