@@ -31,7 +31,7 @@ CREATE TABLE `showtimes` (
 );
 --> statement-breakpoint
 CREATE TABLE `theatres` (
-	`id` text PRIMARY KEY NOT NULL,
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
 	`location` text NOT NULL,
 	`total_seats` integer NOT NULL
@@ -49,5 +49,10 @@ CREATE TABLE `ticket_purchases` (
 	FOREIGN KEY (`seat_id`) REFERENCES `seats`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-ALTER TABLE `users` DROP COLUMN `text_modifiers`;--> statement-breakpoint
-ALTER TABLE `users` DROP COLUMN `int_modifiers`;
+CREATE TABLE `users` (
+	`id` text PRIMARY KEY NOT NULL,
+	`first_name` text NOT NULL,
+	`last_name` text NOT NULL,
+	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`balance` integer DEFAULT 10000 NOT NULL
+);

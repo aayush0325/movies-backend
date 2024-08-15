@@ -30,7 +30,7 @@ export const movies = sqliteTable("movies", {
 
 // Theatres Table
 export const theatres = sqliteTable("theatres", {
-  id: text("id").primaryKey(),
+  id: integer("id").primaryKey({autoIncrement:true}),
   name: text("name").notNull(),
   location: text("location").notNull(),
   totalSeats: integer("total_seats").notNull(),
