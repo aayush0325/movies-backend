@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "c558c2d7-80f8-41fe-bd39-fc5ed171451f",
+  "id": "df0d5952-53af-4879-98d9-0a2efad29315",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "movies": {
@@ -81,11 +81,18 @@
           "notNull": true,
           "autoincrement": true
         },
+        "parent_theatre": {
+          "name": "parent_theatre",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "showtime_id": {
           "name": "showtime_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "seat_number": {
@@ -113,6 +120,19 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "seats_parent_theatre_theatres_id_fk": {
+          "name": "seats_parent_theatre_theatres_id_fk",
+          "tableFrom": "seats",
+          "tableTo": "theatres",
+          "columnsFrom": [
+            "parent_theatre"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "seats_showtime_id_showtimes_id_fk": {
           "name": "seats_showtime_id_showtimes_id_fk",
           "tableFrom": "seats",
@@ -251,10 +271,31 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "theatres_owner_id_users_id_fk": {
+          "name": "theatres_owner_id_users_id_fk",
+          "tableFrom": "theatres",
+          "tableTo": "users",
+          "columnsFrom": [
+            "owner_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },

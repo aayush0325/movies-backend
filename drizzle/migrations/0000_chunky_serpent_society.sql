@@ -11,10 +11,12 @@ CREATE TABLE `movies` (
 --> statement-breakpoint
 CREATE TABLE `seats` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`showtime_id` integer NOT NULL,
+	`parent_theatre` integer,
+	`showtime_id` integer,
 	`seat_number` text NOT NULL,
 	`is_booked` integer DEFAULT 0 NOT NULL,
 	`user_id` text,
+	FOREIGN KEY (`parent_theatre`) REFERENCES `theatres`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`showtime_id`) REFERENCES `showtimes`(`id`) ON UPDATE no action ON DELETE no action,
 	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
@@ -34,7 +36,9 @@ CREATE TABLE `theatres` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`name` text NOT NULL,
 	`location` text NOT NULL,
-	`total_seats` integer NOT NULL
+	`total_seats` integer NOT NULL,
+	`owner_id` text,
+	FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `ticket_purchases` (
