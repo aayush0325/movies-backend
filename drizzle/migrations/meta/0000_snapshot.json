@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "df0d5952-53af-4879-98d9-0a2efad29315",
+  "id": "c1daadde-7609-4e3c-b83c-c21ae06dcf16",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "movies": {
@@ -85,7 +85,7 @@
           "name": "parent_theatre",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "showtime_id": {
@@ -130,7 +130,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "seats_showtime_id_showtimes_id_fk": {
@@ -143,7 +143,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "seats_user_id_users_id_fk": {
@@ -182,7 +182,7 @@
         },
         "theatre_id": {
           "name": "theatre_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -234,7 +234,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -276,7 +276,7 @@
           "name": "owner_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -371,7 +371,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "ticket_purchases_seat_id_seats_id_fk": {
@@ -384,7 +384,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

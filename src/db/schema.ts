@@ -34,14 +34,14 @@ export const theatres = sqliteTable("theatres", {
   name: text("name").notNull(),
   location: text("location").notNull(),
   totalSeats: integer("total_seats").notNull(),
-  owner_id:text("owner_id").references(()=>users.id)
+  owner_id: text("owner_id").references(() => users.id).notNull() // No ON DELETE CASCADE here
 });
 
 // Showtimes Table
 export const showtimes = sqliteTable("showtimes", {
   id: integer("id").primaryKey({ autoIncrement: true }),  
   movieId: integer("movie_id").notNull().references(() => movies.id),
-  theatreId: integer("theatre_id").notNull().references(() => theatres.id),
+  theatreId: integer("theatre_id").notNull().references(() => theatres.id, { onDelete: "cascade" }), // Cascade delete
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
   price: integer("price").notNull(),
@@ -50,8 +50,8 @@ export const showtimes = sqliteTable("showtimes", {
 // Seats Table
 export const seats = sqliteTable("seats", {
   id: integer("id").primaryKey({ autoIncrement: true }),  
-  parentTheatre: integer("parent_theatre").references(() => theatres.id),
-  showtimeId: integer("showtime_id").references(() => showtimes.id),
+  parentTheatre: integer("parent_theatre").references(() => theatres.id, { onDelete: "cascade" }).notNull(), // Cascade delete
+  showtimeId: integer("showtime_id").references(() => showtimes.id, { onDelete: "cascade" }), // Cascade delete
   seatNumber: text("seat_number").notNull(),
   isBooked: integer("is_booked").notNull().default(0),  // 0 for false, 1 for true
   userId: text("user_id").references(() => users.id),  // Nullable foreign key
@@ -61,8 +61,8 @@ export const seats = sqliteTable("seats", {
 export const ticketPurchases = sqliteTable("ticket_purchases", {
   id: integer("id").primaryKey({ autoIncrement: true }),  
   userId: text("user_id").notNull().references(() => users.id),
-  showtimeId: integer("showtime_id").notNull().references(() => showtimes.id),
-  seatId: integer("seat_id").notNull().references(() => seats.id),
+  showtimeId: integer("showtime_id").notNull().references(() => showtimes.id, { onDelete: "cascade" }), // Cascade delete
+  seatId: integer("seat_id").notNull().references(() => seats.id, { onDelete: "cascade" }), // Cascade delete
   purchaseTime: text("purchase_time").notNull().default(sql`CURRENT_TIMESTAMP`),
   amountPaid: integer("amount_paid").notNull(),
 });
