@@ -167,7 +167,7 @@ theatresRouter.delete('/delete', async (c) => {
     if (result) {
       return c.json({
         message: 'Theatre deleted successfully',
-        result,
+        // result,
       });
     } else {
       return c.json({

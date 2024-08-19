@@ -23,9 +23,7 @@ export const movies = sqliteTable("movies", {
   rating: integer("rating").notNull().default(0),
   releaseDate: text("release_date").notNull(),
   posterUrl: text("poster_url"),
-  createdAt: text("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  director:text('director_id').references(() => users.id).notNull()
 });
 
 // Theatres Table

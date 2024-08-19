@@ -6,7 +6,8 @@ CREATE TABLE `movies` (
 	`rating` integer DEFAULT 0 NOT NULL,
 	`release_date` text NOT NULL,
 	`poster_url` text,
-	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL
+	`director_id` text NOT NULL,
+	FOREIGN KEY (`director_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `seats` (
