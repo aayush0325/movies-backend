@@ -4,6 +4,7 @@ import { createMovieSchema } from "../../zod/movies";
 import { drizzle } from "drizzle-orm/d1";
 import { movies } from "../../db/schema";
 import { eq, like } from "drizzle-orm";
+import { title } from "process";
 
 type Bindings = {
     DB: D1Database
@@ -54,7 +55,12 @@ moviesRouter.post('/create',async (c) => {
         }).returning()
 
         return c.json({
-            message:"Movie Created"
+            message:"Movie Created",
+            title:result[0].title,
+            description:result[0].description,
+            durationMinutes:result[0].durationMinutes,
+            releaseDate:result[0].releaseDate,
+            posterUrl:result[0].posterUrl
         })
     }catch(e){
         return c.json({
@@ -165,14 +171,13 @@ moviesRouter.delete('/delete',async (c) => {
         const result = await db.delete(movies).where(eq(movies.id, id));
 
         if (result) {
-        return c.json({
-            message: 'Theatre deleted successfully',
-            // result,
-        });
+            return c.json({
+                message: 'Theatre deleted successfully',
+            });
         } else {
-        return c.json({
-            message: 'No theatre found for the given ID',
-        }, 404);
+            return c.json({
+                message: 'No theatre found for the given ID',
+            }, 404);
         }
     } catch (e) {
         return c.json({

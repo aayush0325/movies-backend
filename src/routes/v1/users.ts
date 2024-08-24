@@ -29,15 +29,15 @@ userRouter.post('/create', async (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); // Unauthorized
+        }, 401); 
     }
 
-    const reqBody = await c.req.json();  // Parse the request body
+    const reqBody = await c.req.json();
     const { success, data } = createUser.safeParse(reqBody);
     if (!success) {
         return c.json({
             message: 'Invalid Inputs',
-        }, 400); // Bad Request
+        }, 400);
     }
     const body: zod.infer<typeof createUser> = data;
 
@@ -50,12 +50,12 @@ userRouter.post('/create', async (c) => {
         }).run();
         return c.json({
             message: 'User created successfully',
-        }, 201); // Created
+        }, 201);
     } catch (e) {
         return c.json({
             message: 'Failed to create user',
             error: (e as Error).message,
-        }, 500); // Internal Server Error
+        }, 500); 
     }
 });
 
@@ -64,7 +64,7 @@ userRouter.get('/read', async (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); // Unauthorized
+        }, 401);
     }
 
     const db = drizzle(c.env.DB);
@@ -73,20 +73,20 @@ userRouter.get('/read', async (c) => {
         if (result.length === 0) {
             return c.json({
                 message: 'User Not Found',
-            }, 404); // Not Found
+            }, 404);
         } else {
             return c.json({
                 firstName: result[0].firstName,
                 lastName: result[0].lastName,
                 createdAt: result[0].createdAt,
                 balance: result[0].balance,
-            }, 200); // OK
+            }, 200);
         }
     } catch (e) {
         return c.json({
             message: 'Failed to fetch user',
             error: (e as Error).message,
-        }, 500); // Internal Server Error
+        }, 500);
     }
 });
 
@@ -95,7 +95,7 @@ userRouter.delete('/delete', async (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); // Unauthorized
+        }, 401);
     }
 
     const db = drizzle(c.env.DB);
@@ -104,17 +104,17 @@ userRouter.delete('/delete', async (c) => {
         if (!result) {
             return c.json({
                 message: 'User not found or already deleted',
-            }, 404); // Not Found
+            }, 404); 
         } else {
             return c.json({
                 message: 'User deleted successfully',
-            }, 200); // OK
+            }, 200); 
         }
     } catch (e) {
         return c.json({
             message: 'Failed to delete user',
             error: (e as Error).message,
-        }, 500); // Internal Server Error
+        }, 500);
     }
 });
 
@@ -123,15 +123,15 @@ userRouter.put('/update', async (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); // Unauthorized
+        }, 401); 
     }
 
-    const reqBody = await c.req.json();  // Parse the request body
+    const reqBody = await c.req.json();  
     const { success, data } = updateUser.safeParse(reqBody);
     if (!success) {
         return c.json({
             message: 'Invalid Inputs',
-        }, 400); // Bad Request
+        }, 400); 
     }
     const body: zod.infer<typeof updateUser> = data;
 
@@ -140,12 +140,12 @@ userRouter.put('/update', async (c) => {
         await db.update(users).set(body).where(eq(users.id, auth.userId)).run();
         return c.json({
             message: 'User updated successfully',
-        }, 200); // OK
+        }, 200);
     } catch (e) {
         return c.json({
             message: 'Failed to update user',
             error: (e as Error).message,
-        }, 500); // Internal Server Error
+        }, 500);
     }
 });
 

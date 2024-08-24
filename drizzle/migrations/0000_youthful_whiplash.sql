@@ -29,8 +29,10 @@ CREATE TABLE `showtimes` (
 	`start_time` text NOT NULL,
 	`end_time` text NOT NULL,
 	`price` integer NOT NULL,
+	`owner_id` text NOT NULL,
 	FOREIGN KEY (`movie_id`) REFERENCES `movies`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`theatre_id`) REFERENCES `theatres`(`id`) ON UPDATE no action ON DELETE cascade
+	FOREIGN KEY (`theatre_id`) REFERENCES `theatres`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`owner_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `theatres` (
