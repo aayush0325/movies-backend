@@ -1,9 +1,7 @@
 import { getAuth } from '@hono/clerk-auth';
 import { Hono } from 'hono';
-import { createUser, updateUser } from '../../zod/users';
-import { seats, users } from '../../db/schema';
+import { seats, users,showtimes } from '../../db/schema';
 import { drizzle } from 'drizzle-orm/d1';
-import zod from 'zod';
 import { eq } from 'drizzle-orm';
 
 type Bindings = {

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "c371a74a-484d-47ff-9edc-bb597d1cee3f",
+  "id": "6379a08e-5a26-4752-99c4-9d5853bc43e0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "movies": {
@@ -84,6 +84,91 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
+    "seat_bookings": {
+      "name": "seat_bookings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "seat_id": {
+          "name": "seat_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "showtime_id": {
+          "name": "showtime_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_booked": {
+          "name": "is_booked",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "seat_bookings_seat_id_seats_id_fk": {
+          "name": "seat_bookings_seat_id_seats_id_fk",
+          "tableFrom": "seat_bookings",
+          "tableTo": "seats",
+          "columnsFrom": [
+            "seat_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "seat_bookings_showtime_id_showtimes_id_fk": {
+          "name": "seat_bookings_showtime_id_showtimes_id_fk",
+          "tableFrom": "seat_bookings",
+          "tableTo": "showtimes",
+          "columnsFrom": [
+            "showtime_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "seat_bookings_user_id_users_id_fk": {
+          "name": "seat_bookings_user_id_users_id_fk",
+          "tableFrom": "seat_bookings",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "seats": {
       "name": "seats",
       "columns": {
@@ -101,33 +186,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "showtime_id": {
-          "name": "showtime_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "seat_number": {
           "name": "seat_number",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "is_booked": {
-          "name": "is_booked",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         }
       },
@@ -144,32 +207,6 @@
             "id"
           ],
           "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "seats_showtime_id_showtimes_id_fk": {
-          "name": "seats_showtime_id_showtimes_id_fk",
-          "tableFrom": "seats",
-          "tableTo": "showtimes",
-          "columnsFrom": [
-            "showtime_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "seats_user_id_users_id_fk": {
-          "name": "seats_user_id_users_id_fk",
-          "tableFrom": "seats",
-          "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },

@@ -10,16 +10,22 @@ CREATE TABLE `movies` (
 	FOREIGN KEY (`director_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE TABLE `seat_bookings` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`seat_id` integer NOT NULL,
+	`showtime_id` integer NOT NULL,
+	`user_id` text,
+	`is_booked` integer DEFAULT 0 NOT NULL,
+	FOREIGN KEY (`seat_id`) REFERENCES `seats`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`showtime_id`) REFERENCES `showtimes`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
 CREATE TABLE `seats` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`parent_theatre` integer NOT NULL,
-	`showtime_id` integer,
 	`seat_number` text NOT NULL,
-	`is_booked` integer DEFAULT 0 NOT NULL,
-	`user_id` text,
-	FOREIGN KEY (`parent_theatre`) REFERENCES `theatres`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`showtime_id`) REFERENCES `showtimes`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`parent_theatre`) REFERENCES `theatres`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
 CREATE TABLE `showtimes` (

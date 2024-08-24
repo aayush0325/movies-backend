@@ -1,6 +1,6 @@
 import { getAuth } from '@hono/clerk-auth'
 import { Hono } from 'hono'
-import { showtimes,theatres } from '../../db/schema';
+import { showtimes,theatres,seats } from '../../db/schema';
 import { createShowSchema } from '../../zod/showtimes';
 import { drizzle } from 'drizzle-orm/d1';
 import { eq } from 'drizzle-orm';

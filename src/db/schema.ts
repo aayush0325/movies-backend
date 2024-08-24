@@ -49,11 +49,8 @@ export const showtimes = sqliteTable("showtimes", {
 // Seats Table
 export const seats = sqliteTable("seats", {
   id: integer("id").primaryKey({ autoIncrement: true }),  
-  parentTheatre: integer("parent_theatre").references(() => theatres.id, { onDelete: "cascade" }).notNull(), // Cascade delete
-  showtimeId: integer("showtime_id").references(() => showtimes.id, { onDelete: "cascade" }), 
+  parentTheatre: integer("parent_theatre").references(() => theatres.id, { onDelete: "cascade" }).notNull(),
   seatNumber: text("seat_number").notNull(),
-  isBooked: integer("is_booked").notNull().default(0),  
-  userId: text("user_id").references(() => users.id),  
 });
 
 // Ticket Purchases Table
@@ -64,4 +61,13 @@ export const ticketPurchases = sqliteTable("ticket_purchases", {
   seatId: integer("seat_id").notNull().references(() => seats.id, { onDelete: "cascade" }), 
   purchaseTime: text("purchase_time").notNull().default(sql`CURRENT_TIMESTAMP`),
   amountPaid: integer("amount_paid").notNull(),
+});
+
+// Seat Bookings Table
+export const seatBookings = sqliteTable("seat_bookings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  seatId: integer("seat_id").references(() => seats.id, { onDelete: "cascade" }).notNull(),
+  showtimeId: integer("showtime_id").references(() => showtimes.id, { onDelete: "cascade" }).notNull(),
+  userId: text("user_id").references(() => users.id), // Assuming a user must book a seat
+  isBooked: integer("is_booked").notNull().default(0),
 });
