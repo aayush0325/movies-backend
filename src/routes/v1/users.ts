@@ -1,7 +1,7 @@
 import { getAuth } from '@hono/clerk-auth';
 import { Hono } from 'hono';
 import { createUser, updateUser } from '../../zod/users';
-import { users } from '../../db/schema';
+import { users,seatBookings } from '../../db/schema';
 import { drizzle } from 'drizzle-orm/d1';
 import zod from 'zod';
 import { eq } from 'drizzle-orm';
@@ -17,11 +17,11 @@ userRouter.get('/', (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in.',
-        }, 401); // Unauthorized
+        }, 401); 
     }
     return c.json({
         message: 'You are logged in!',
-    }, 200); // OK
+    }, 200);
 });
 
 userRouter.post('/create', async (c) => {
@@ -148,5 +148,28 @@ userRouter.put('/update', async (c) => {
         }, 500);
     }
 });
+
+userRouter.get('/bookings', async (c) => {
+    const auth = getAuth(c);
+    if (!auth?.userId) {
+        return c.json({
+            message: 'You are not logged in',
+        }, 401); 
+    }
+
+    
+    try {
+        const db = drizzle(c.env.DB);
+        const result = await db.select().from(seatBookings).where(eq(seatBookings.userId,auth.userId));
+        return c.json({
+            result
+        }, 200);
+    } catch (e) {
+        return c.json({
+            message: 'Failed to update user',
+            error: (e as Error).message,
+        }, 500);
+    }
+})
 
 export default userRouter;

@@ -17,7 +17,7 @@ seatsRouter.get('/',(c) => {
 })
 
 seatsRouter.get('/read/from',async (c)=>{
-    const id = Number(c.req.query('parent'));
+    const id = Number(c.req.query('id'));
 
     if (!id || isNaN(id)) {
         return c.json({
@@ -53,30 +53,6 @@ seatsRouter.get('/read/from',async (c)=>{
     };
 });
 
-seatsRouter.put('/book/seat',async (c) => {
-    const id = Number(c.req.query('id'));
-    if (!id || isNaN(id)) {
-        return c.json({
-        message: 'Invalid theatre ID provided',
-        }, 400);
-    }
-
-    const auth = getAuth(c);
-    if (!auth?.userId) {
-        return c.json({
-        message: 'You are not logged in',
-        }, 401);
-    }
-
-    try {
-        const db = drizzle(c.env.DB);
-    } catch (e) {
-        return c.json({
-        message: 'Internal Server Error',
-        error: (e as Error).message,
-        }, 500);
-    }    
-})
 
 
 export default seatsRouter;

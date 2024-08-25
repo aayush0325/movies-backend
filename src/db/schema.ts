@@ -68,6 +68,6 @@ export const seatBookings = sqliteTable("seat_bookings", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   seatId: integer("seat_id").references(() => seats.id, { onDelete: "cascade" }).notNull(),
   showtimeId: integer("showtime_id").references(() => showtimes.id, { onDelete: "cascade" }).notNull(),
-  userId: text("user_id").references(() => users.id), // Assuming a user must book a seat
+  userId: text("user_id").references(() => users.id),
   isBooked: integer("is_booked").notNull().default(0),
 });
