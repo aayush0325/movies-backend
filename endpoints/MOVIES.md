@@ -1,6 +1,6 @@
 Movies API Documentation
 
-api/v1/movies/
+https://movies-backend.aayush0325.workers.dev//api/v1/movies/
 
 1. GET /
 

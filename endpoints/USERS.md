@@ -1,6 +1,6 @@
 Users API Documentation
 
-api/v1/users
+https://movies-backend.aayush0325.workers.dev/api/v1/users
 
 1. GET /
 

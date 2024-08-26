@@ -1,6 +1,6 @@
 Seats API Documentation
 
-api/v1/seats
+https://movies-backend.aayush0325.workers.dev/api/v1/seats
 
 1. GET /
 
