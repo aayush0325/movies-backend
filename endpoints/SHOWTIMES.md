@@ -1,6 +1,6 @@
 Showtimes API Documentation
 
-https://movies-backend.aayush0325.workers.dev/api/v1/shows
+api/v1/shows
 
 1. GET /
 

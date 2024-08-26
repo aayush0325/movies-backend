@@ -1,6 +1,6 @@
 Theatres API Documentation
 
-https://movies-backend.aayush0325.workers.dev/api/v1/theatres
+/api/v1/theatres
 
 1. GET /
 
