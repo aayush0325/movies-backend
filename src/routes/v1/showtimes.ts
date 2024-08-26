@@ -1,202 +1,197 @@
-import { getAuth } from '@hono/clerk-auth'
-import { Hono } from 'hono'
-import { showtimes,theatres,seats,seatBookings,users } from '../../db/schema';
-import { createShowSchema,bookSeatSchema } from '../../zod/showtimes';
+import { getAuth } from '@hono/clerk-auth';
+import { Hono } from 'hono';
+import { showtimes, theatres, seats, seatBookings, users } from '../../db/schema';
+import { createShowSchema, bookSeatSchema } from '../../zod/showtimes';
 import { drizzle } from 'drizzle-orm/d1';
-import { eq ,and} from 'drizzle-orm';
+import { eq, and, or } from 'drizzle-orm';
 
 type Bindings = {
   DB: D1Database
 }
 
-const showTimesRouter = new Hono<{Bindings:Bindings}>();
+const showTimesRouter = new Hono<{ Bindings: Bindings }>();
 
-showTimesRouter.get('/',c => {
+showTimesRouter.get('/', (c) => {
     const auth = getAuth(c);
     if (!auth?.userId) {
       return c.json({
         message: 'You are not logged in.',
-      })
+      }, 401); // Unauthorized
     }
     return c.json({
         message: 'You are logged in!',
-    })
-})
+    }, 200); // OK
+});
 
-showTimesRouter.post('/create',async (c) => {
+showTimesRouter.post('/create', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    })
+    }, 401); // Unauthorized
   }
 
   const reqBody = await c.req.json();
-  const{success,data} = createShowSchema.safeParse(reqBody)
+  const { success, data } = createShowSchema.safeParse(reqBody);
   
-  if(!success){
+  if (!success) {
     return c.json({
-        message:"Invalid inputs"
-    })
+        message: "Invalid inputs"
+    }, 400); // Bad Request
   }
 
-  try{
+  try {
     const db = drizzle(c.env.DB);
 
     const result = await db.insert(showtimes).values({
-      theatreId:data.theatreId,
-      movieId:data.movieId,
-      startTime:data.startTime,
-      endTime:data.endTime,
-      price:data.price,
-      owner_id:auth.userId
-    }).returning()
+      theatreId: data.theatreId,
+      movieId: data.movieId,
+      startTime: data.startTime,
+      endTime: data.endTime,
+      price: data.price,
+      owner_id: auth.userId
+    }).returning();
 
     return c.json({
-      message:"Show Created",
+      message: "Show Created",
       result
-    })
-  }catch(e){
+    }, 201); // Created
+  } catch (e) {
     return c.json({
-      message: 'Failed to create theatre',
+      message: 'Failed to create show',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-})
+});
 
-showTimesRouter.get('/read/personal',async (c) => {
+showTimesRouter.get('/read/personal', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    })
+    }, 401); // Unauthorized
   }
 
-  try{
-
+  try {
     const db = drizzle(c.env.DB);
 
-    const result = await db.select().from(showtimes).where(eq(showtimes.owner_id,auth.userId));
+    const result = await db.select().from(showtimes).where(eq(showtimes.owner_id, auth.userId));
 
-    return c.json(result)
+    return c.json(result, 200); // OK
 
-  }catch(e){
+  } catch (e) {
     return c.json({
-      message: 'Failed to create theatre',
+      message: 'Failed to fetch personal showtimes',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-})
+});
 
-showTimesRouter.get('/read/theatre',async (c) => {
+showTimesRouter.get('/read/theatre', async (c) => {
   const id = Number(c.req.query('id'));
   if (!id || isNaN(id)) {
-      return c.json({
+    return c.json({
       message: 'Invalid theatre ID provided',
-      }, 400);
+    }, 400); // Bad Request
   }
 
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    })
+    }, 401); // Unauthorized
   }
 
-  try{
-    
+  try {
     const db = drizzle(c.env.DB);
 
-    const result = await db.select().from(showtimes).where(eq(showtimes.theatreId,id));
+    const result = await db.select().from(showtimes).where(eq(showtimes.theatreId, id));
 
-    return c.json(result)
+    return c.json(result, 200); // OK
 
-  }catch(e){
+  } catch (e) {
     return c.json({
-      message: 'Failed to create theatre',
+      message: 'Failed to fetch showtimes for theatre',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-})
+});
 
-showTimesRouter.delete('/delete/byUSER',async (c) => {
+showTimesRouter.delete('/delete/byUSER', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    })
+    }, 401); // Unauthorized
   }
 
-  try{
-    
+  try {
     const db = drizzle(c.env.DB);
 
-    const result = await db.delete(showtimes).where(eq(showtimes.owner_id,auth.userId));
+    const result = await db.delete(showtimes).where(eq(showtimes.owner_id, auth.userId));
 
     if (result) {
       return c.json({
-        message: 'Theatre deleted successfully',
-      });
-  } else {
+        message: 'Showtimes deleted successfully',
+      }, 200); // OK
+    } else {
       return c.json({
-        message: 'No theatre found for the given ID',
-      }, 404);
-  }
+        message: 'No showtimes found for the given ID',
+      }, 404); // Not Found
+    }
 
-  }catch(e){
+  } catch (e) {
     return c.json({
-      message: 'Failed to create theatre',
+      message: 'Failed to delete showtimes',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-})
+});
 
-showTimesRouter.delete('/delete/byID',async (c) => {
+showTimesRouter.delete('/delete/byID', async (c) => {
   const id = Number(c.req.query('id'));
   if (!id || isNaN(id)) {
-      return c.json({
-      message: 'Invalid theatre ID provided',
-      }, 400);
+    return c.json({
+      message: 'Invalid showtime ID provided',
+    }, 400); // Bad Request
   }
 
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    })
+    }, 401); // Unauthorized
   }
 
-  try{
-    
+  try {
     const db = drizzle(c.env.DB);
 
-    const result = await db.delete(showtimes).where(eq(showtimes.id,id));
+    const result = await db.delete(showtimes).where(eq(showtimes.id, id));
 
     if (result) {
       return c.json({
-          message: 'Theatre deleted successfully',
-      });
-  } else {
+        message: 'Showtime deleted successfully',
+      }, 200); // OK
+    } else {
       return c.json({
-          message: 'No theatre found for the given ID',
-      }, 404);
-  }
+        message: 'No showtime found for the given ID',
+      }, 404); // Not Found
+    }
 
-  }catch(e){
+  } catch (e) {
     return c.json({
-      message: 'Failed to create theatre',
+      message: 'Failed to delete showtime',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-})
-
+});
 
 showTimesRouter.post('/booking', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    });
+    }, 401); // Unauthorized
   }
 
   const reqBody = await c.req.json();
@@ -205,75 +200,82 @@ showTimesRouter.post('/booking', async (c) => {
   if (!success) {
     return c.json({
       message: "Invalid inputs",
-    });
+    }, 400); // Bad Request
   }
 
   try {
     const db = drizzle(c.env.DB);
 
-    const existingBooking = await db.select().from(seatBookings)
-      .where(
-        and(
-          eq(seatBookings.seatId,data.seatId),
-          eq(seatBookings.showtimeId,data.showtimeId),
-          eq(seatBookings.isBooked,1)
-        )
-      );
+    // Build the OR condition for checking each seatId
+    const seatConditions = data.seatIds.map(seatId =>
+      and(
+        eq(seatBookings.showtimeId, data.showtimeId),
+        eq(seatBookings.seatId, seatId),
+        eq(seatBookings.isBooked, 1)
+      )
+    );
 
-    if (existingBooking.length) {
+    const existingBookings = await db.select().from(seatBookings)
+      .where(or(...seatConditions));
+
+    if (existingBookings.length) {
       return c.json({
-        message: "Seat is already booked for this showtime",
-      });
+        message: "One or more seats are already booked for this showtime",
+        bookedSeats: existingBookings.map(booking => booking.seatId),
+      }, 409); // Conflict
     }
 
-  
     const showtime = await db.select().from(showtimes)
-      .where(eq(showtimes.id,data.showtimeId));
+      .where(eq(showtimes.id, data.showtimeId));
 
     if (!showtime.length) {
       return c.json({
         message: "Showtime not found",
-      });
+      }, 404); // Not Found
     }
-    
+
     const user = await db.select().from(users)
-      .where(eq(users.id,auth.userId));
+      .where(eq(users.id, auth.userId));
 
     if (!user.length) {
       return c.json({
         message: "User not found",
-      });
+      }, 404); // Not Found
     }
 
-    if (user[0].balance < showtime[0].price) {
+    const totalCost = showtime[0].price * data.seatIds.length;
+
+    if (user[0].balance < totalCost) {
       return c.json({
         message: "Insufficient balance",
-      });
+        requiredBalance: totalCost,
+      }, 402); // Payment Required
     }
 
-    const booking = await db.insert(seatBookings).values({
-      seatId:data.seatId,
-      showtimeId:data.showtimeId,
-      userId:auth.userId,
-      isBooked:1
-    }).returning();
+    const bookings = await db.insert(seatBookings).values(
+      data.seatIds.map(seatId => ({
+        seatId,
+        showtimeId: data.showtimeId,
+        userId: auth.userId,
+        isBooked: 1
+      }))
+    ).returning();
 
     await db.update(users).set({
-      balance: user[0].balance - showtime[0].price
-    }).where(eq(users.id,auth.userId))
+      balance: user[0].balance - totalCost
+    }).where(eq(users.id, auth.userId));
 
     return c.json({
-      message: "Seat booked successfully",
-      booking,
-      newBalance: user[0].balance - showtime[0].price,
-    });
-
+      message: "Seats booked successfully",
+      bookings,
+      newBalance: user[0].balance - totalCost,
+    }, 201); // Created
 
   } catch (e) {
     return c.json({
-      message: 'Failed to book seat',
+      message: 'Failed to book seats',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
 });
 
@@ -282,7 +284,7 @@ showTimesRouter.get('/seats/:showtimeId', async (c) => {
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in.',
-    });
+    }, 401); // Unauthorized
   }
 
   const showtimeId = parseInt(c.req.param('showtimeId'), 10);
@@ -290,7 +292,7 @@ showTimesRouter.get('/seats/:showtimeId', async (c) => {
   if (isNaN(showtimeId)) {
     return c.json({
       message: "Invalid showtime ID",
-    });
+    }, 400); // Bad Request
   }
 
   try {
@@ -303,7 +305,7 @@ showTimesRouter.get('/seats/:showtimeId', async (c) => {
     if (!theatreIdResult.length) {
       return c.json({
         message: "Showtime not found",
-      });
+      }, 404); // Not Found
     }
 
     const theatreId = theatreIdResult[0].theatreId;
@@ -327,17 +329,14 @@ showTimesRouter.get('/seats/:showtimeId', async (c) => {
     return c.json({
       message: `${seatStatus.length} Seats retrieved successfully`,
       seats: seatStatus,
-    });
+    }, 200); // OK
 
   } catch (e) {
     return c.json({
       message: 'Failed to retrieve seats',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
 });
-
-
-
 
 export default showTimesRouter;

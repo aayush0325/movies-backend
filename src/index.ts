@@ -15,7 +15,7 @@ app.use('*', clerkMiddleware())
 app.use('*',cors())
 
 app.get('/', (c) => {
-  return c.text('Hello Hono!')
+  return c.text('Hello from Aayush!')
 })
 
 app.route('/api/v1',v1);

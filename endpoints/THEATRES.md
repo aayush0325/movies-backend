@@ -22,21 +22,21 @@ api/v1/theatres
 
 2. POST /create
 
-- Description: Creates a new theatre entry in the database with the specified number of seats. The user must be authenticated.
+- Description: Creates a new theatre. The user must be authenticated.
 
 - Expected Request Body:
   {
-      "name": "string (min length: 3)",
-      "location": "string (min length: 3)",
-      "totalSeats": "number (min: 25, max: 100)"
+      "name": "string",
+      "location": "string",
+      "totalSeats": "number"
   }
 
 - Possible Responses:
-  - 201 Created: Theatre was created successfully with the specified number of seats.
+  - 201 Created: Theatre created successfully with seats.
     Response:
     {
-        "message": "You have created a theatre with {totalSeats} Seats",
-        "theatreId": "number (theatre ID)"
+        "message": "You have created a theatre with X Seats",
+        "theatreId": "number"
     }
   - 400 Bad Request: The input data is invalid.
     Response:
@@ -57,13 +57,13 @@ api/v1/theatres
 
 3. GET /read/bulk
 
-- Description: Searches for theatres by name based on a provided filter.
+- Description: Fetches theatres based on a search filter.
 
 - Expected Query Parameter:
-  - `filter`: "string (the filter to search for in theatre names)"
+  - filter: "string" (the search term for theatre names)
 
 - Possible Responses:
-  - 200 OK: A list of theatres matching the filter is returned.
+  - 200 OK: List of theatres matching the filter.
     Response:
     {
         "final": [
@@ -71,12 +71,12 @@ api/v1/theatres
                 "name": "string",
                 "location": "string",
                 "totalSeats": "number",
-                "id": "number (theatre ID)"
+                "id": "number"
             },
             ...
         ]
     }
-  - 400 Bad Request: The filter is invalid or empty.
+  - 400 Bad Request: Invalid search filter provided.
     Response:
     {
         "message": "Invalid Search"
@@ -86,7 +86,7 @@ api/v1/theatres
     {
         "message": "You are not logged in"
     }
-  - 500 Internal Server Error: An error occurred while searching for theatres.
+  - 500 Internal Server Error: An error occurred while fetching theatres.
     Response:
     {
         "message": "Internal Server Error",
@@ -95,19 +95,19 @@ api/v1/theatres
 
 4. GET /read/personal
 
-- Description: Fetches all theatres owned by the authenticated user.
+- Description: Fetches theatres owned by the authenticated user.
 
 - Request Body: None
 
 - Possible Responses:
-  - 200 OK: A list of theatres owned by the user is returned.
+  - 200 OK: List of theatres owned by the user.
     Response:
     [
         {
             "name": "string",
             "location": "string",
             "totalSeats": "number",
-            "id": "number (theatre ID)"
+            "id": "number"
         },
         ...
     ]
@@ -116,7 +116,7 @@ api/v1/theatres
     {
         "message": "You are not logged in"
     }
-  - 500 Internal Server Error: An error occurred while fetching the user's theatres.
+  - 500 Internal Server Error: An error occurred while fetching personal theatres.
     Response:
     {
         "message": "Internal Server Error",
@@ -125,18 +125,18 @@ api/v1/theatres
 
 5. DELETE /delete
 
-- Description: Deletes a theatre owned by the authenticated user.
+- Description: Deletes a theatre by ID. The user must be authenticated.
 
 - Expected Query Parameter:
-  - `id`: "number (theatre ID to be deleted)"
+  - id: "number" (the ID of the theatre to delete)
 
 - Possible Responses:
-  - 200 OK: Theatre was deleted successfully.
+  - 200 OK: Theatre deleted successfully.
     Response:
     {
         "message": "Theatre deleted successfully"
     }
-  - 400 Bad Request: The theatre ID is invalid or not provided.
+  - 400 Bad Request: Invalid theatre ID provided.
     Response:
     {
         "message": "Invalid theatre ID provided"
@@ -146,7 +146,7 @@ api/v1/theatres
     {
         "message": "You are not logged in"
     }
-  - 404 Not Found: No theatre was found for the given ID.
+  - 404 Not Found: No theatre found for the given ID.
     Response:
     {
         "message": "No theatre found for the given ID"

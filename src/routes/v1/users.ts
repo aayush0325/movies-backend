@@ -1,7 +1,7 @@
 import { getAuth } from '@hono/clerk-auth';
 import { Hono } from 'hono';
 import { createUser, updateUser } from '../../zod/users';
-import { users,seatBookings } from '../../db/schema';
+import { users, seatBookings, movies, theatres, showtimes, seats } from '../../db/schema';
 import { drizzle } from 'drizzle-orm/d1';
 import zod from 'zod';
 import { eq } from 'drizzle-orm';
@@ -17,7 +17,7 @@ userRouter.get('/', (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in.',
-        }, 401); 
+        }, 401);
     }
     return c.json({
         message: 'You are logged in!',
@@ -29,7 +29,7 @@ userRouter.post('/create', async (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); 
+        }, 401);
     }
 
     const reqBody = await c.req.json();
@@ -55,7 +55,7 @@ userRouter.post('/create', async (c) => {
         return c.json({
             message: 'Failed to create user',
             error: (e as Error).message,
-        }, 500); 
+        }, 500);
     }
 });
 
@@ -104,11 +104,11 @@ userRouter.delete('/delete', async (c) => {
         if (!result) {
             return c.json({
                 message: 'User not found or already deleted',
-            }, 404); 
+            }, 404);
         } else {
             return c.json({
                 message: 'User deleted successfully',
-            }, 200); 
+            }, 200);
         }
     } catch (e) {
         return c.json({
@@ -123,15 +123,15 @@ userRouter.put('/update', async (c) => {
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); 
+        }, 401);
     }
 
-    const reqBody = await c.req.json();  
+    const reqBody = await c.req.json();
     const { success, data } = updateUser.safeParse(reqBody);
     if (!success) {
         return c.json({
             message: 'Invalid Inputs',
-        }, 400); 
+        }, 400);
     }
     const body: zod.infer<typeof updateUser> = data;
 
@@ -149,27 +149,68 @@ userRouter.put('/update', async (c) => {
     }
 });
 
+interface Booking {
+    theatreName: string;
+    movieName: string;
+    seats: string[];
+}
+
+interface BookingResponse {
+    bookings: Booking[];
+}
+
 userRouter.get('/bookings', async (c) => {
     const auth = getAuth(c);
     if (!auth?.userId) {
         return c.json({
             message: 'You are not logged in',
-        }, 401); 
+        }, 401);
     }
 
-    
     try {
         const db = drizzle(c.env.DB);
-        const result = await db.select().from(seatBookings).where(eq(seatBookings.userId,auth.userId));
-        return c.json({
-            result
-        }, 200);
+
+        const result = await db
+            .select({
+                theatreName: theatres.name,
+                movieName: movies.title,
+                seatNumber: seats.seatNumber,
+            })
+            .from(seatBookings)
+            .innerJoin(seats, eq(seatBookings.seatId, seats.id))
+            .innerJoin(showtimes, eq(seatBookings.showtimeId, showtimes.id))
+            .innerJoin(theatres, eq(showtimes.theatreId, theatres.id))
+            .innerJoin(movies, eq(showtimes.movieId, movies.id))
+            .where(eq(seatBookings.userId, auth.userId));
+
+        // Type-safe grouping of bookings by theatre
+        const groupedBookings = result.reduce<Record<string, Booking>>((acc, curr) => {
+            const { theatreName, movieName, seatNumber } = curr;
+
+            if (!acc[theatreName]) {
+                acc[theatreName] = {
+                    theatreName,
+                    movieName,
+                    seats: []
+                };
+            }
+
+            acc[theatreName].seats.push(seatNumber);
+            return acc;
+        }, {});
+
+        // Converting grouped bookings to an array
+        const bookingsArray: Booking[] = Object.values(groupedBookings);
+
+        const response: BookingResponse = { bookings: bookingsArray };
+
+        return c.json(response, 200);
     } catch (e) {
         return c.json({
-            message: 'Failed to update user',
+            message: 'Failed to fetch bookings',
             error: (e as Error).message,
         }, 500);
     }
-})
+});
 
 export default userRouter;

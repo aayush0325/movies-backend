@@ -12,32 +12,31 @@ type Bindings = {
 
 const theatresRouter = new Hono<{Bindings:Bindings}>();
 
-theatresRouter.get('/',c => {
+theatresRouter.get('/', c => {
     const auth = getAuth(c);
     if (!auth?.userId) {
         return c.json({
           message: 'You are not logged in.',
-        })
+        }, 401); // Unauthorized
     }
     return c.json({
         message: 'You are logged in!',
-    })
-})
-
+    }, 200); // OK
+});
 
 theatresRouter.post('/create', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in',
-    });
+    }, 401); // Unauthorized
   }
   const reqBody = await c.req.json();
   const { success, data } = createTheatre.safeParse(reqBody);
   if (!success) {
     return c.json({
       message: 'Invalid Inputs',
-    });
+    }, 400); // Bad Request
   }
   const body: zod.infer<typeof createTheatre> = data;
   const db = drizzle(c.env.DB);
@@ -46,14 +45,14 @@ theatresRouter.post('/create', async (c) => {
     const [theatreId] = await db
       .insert(theatres)
       .values({
-        name:body.name,
-        location:body.location,
-        totalSeats:body.totalSeats,
-        owner_id:auth.userId
+        name: body.name,
+        location: body.location,
+        totalSeats: body.totalSeats,
+        owner_id: auth.userId
       })
       .returning({ id: theatres.id });
 
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const seatsData = Array.from({ length: body.totalSeats }, (_, i) => {
       const letter = alphabet[Math.floor(i / 10)];
       const number = (i % 10) + 1;
@@ -66,8 +65,8 @@ theatresRouter.post('/create', async (c) => {
         owner_id: null,
       };
     });
-    // Batch insertion to avoid SQLite variable limit
-    const batchSize = 20; // Set a safe batch size to avoid hitting the limit
+
+    const batchSize = 20;
     for (let i = 0; i < seatsData.length; i += batchSize) {
       const batch = seatsData.slice(i, i + batchSize);
       await db.insert(seats).values(batch).run();
@@ -75,7 +74,7 @@ theatresRouter.post('/create', async (c) => {
     return c.json({
       message: `You have created a theatre with ${body.totalSeats} Seats`,
       theatreId: theatreId.id,
-    });
+    }, 201); // Created
   } catch (e) {
     return c.json({
       message: 'Failed to create theatre',
@@ -84,70 +83,67 @@ theatresRouter.post('/create', async (c) => {
   }
 });
 
-theatresRouter.get('/read/bulk',async (c) => {
+theatresRouter.get('/read/bulk', async (c) => {
   const filter = c.req.query('filter')?.trim() || '';
-  if(filter===''){
+  if (filter === '') {
     return c.json({
-      message:'Invalid Search'
-    })
+      message: 'Invalid Search'
+    }, 400); // Bad Request
   }
   const auth = getAuth(c);
-  if(!auth?.userId){
+  if (!auth?.userId) {
     return c.json({
-      message:'You are not logged in'
-    })
+      message: 'You are not logged in'
+    }, 401); // Unauthorized
   }
-  
-  try{
+
+  try {
     const db = drizzle(c.env.DB);
-    const result = await db.select().from(theatres).where(like(theatres.name,`%${filter}%`));
+    const result = await db.select().from(theatres).where(like(theatres.name, `%${filter}%`));
     const final = result.map((item) => {
       return {
-        name:item.name,
-        location:item.location,
-        totalSeats:item.totalSeats,
-        id:item.id
+        name: item.name,
+        location: item.location,
+        totalSeats: item.totalSeats,
+        id: item.id
       }
-    })
+    });
     return c.json({
       final
-    })
-  }catch(e){
+    }, 200); // OK
+  } catch (e) {
     return c.json({
       message: 'Internal Server Error',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-
-  
-})
+});
 
 theatresRouter.get('/read/personal', async (c) => {
   const auth = getAuth(c);
-  if(!auth?.userId){
+  if (!auth?.userId) {
     return c.json({
-      message:'You are not logged in'
-    })
+      message: 'You are not logged in'
+    }, 401); // Unauthorized
   }
-  try{
+  try {
     const db = drizzle(c.env.DB);
-    const result = await db.select().from(theatres).where(eq(theatres.owner_id,auth.userId));
-    return c.json(result)
-  }catch(e){
+    const result = await db.select().from(theatres).where(eq(theatres.owner_id, auth.userId));
+    return c.json(result, 200); // OK
+  } catch (e) {
     return c.json({
       message: 'Internal Server Error',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
-})
-
+});
 
 theatresRouter.delete('/delete', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
     return c.json({
       message: 'You are not logged in',
-    }, 401);
+    }, 401); // Unauthorized
   }
 
   const id = Number(c.req.query('id'));
@@ -155,7 +151,7 @@ theatresRouter.delete('/delete', async (c) => {
   if (!id || isNaN(id)) {
     return c.json({
       message: 'Invalid theatre ID provided',
-    }, 400);
+    }, 400); // Bad Request
   }
 
   try {
@@ -167,22 +163,18 @@ theatresRouter.delete('/delete', async (c) => {
     if (result) {
       return c.json({
         message: 'Theatre deleted successfully',
-        // result,
-      });
+      }, 200); // OK
     } else {
       return c.json({
         message: 'No theatre found for the given ID',
-      }, 404);
+      }, 404); // Not Found
     }
   } catch (e) {
     return c.json({
       message: 'Internal Server Error',
       error: (e as Error).message,
-    }, 500);
+    }, 500); // Internal Server Error
   }
 });
-
-
-
 
 export default theatresRouter;

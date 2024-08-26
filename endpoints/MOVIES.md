@@ -1,15 +1,15 @@
 Movies API Documentation
 
-api/v1/movies
+api/v1/movies/
 
 1. GET /
 
-- Description: Checks if the user is authenticated.
+- Description: Checks if the movies router is working and if the user is logged in.
 
 - Request Body: None
 
 - Possible Responses:
-  - 200 OK: User is logged in.
+  - 200 OK: Confirmation that the movies router is working and the user is logged in.
     Response:
     {
         "message": "You are logged in!"
@@ -22,24 +22,27 @@ api/v1/movies
 
 2. POST /create
 
-- Description: Creates a new movie entry in the database. The user must be authenticated.
+- Description: Creates a new movie entry. The user must be authenticated.
 
 - Expected Request Body:
-  {
-      "title": "string (min length: 1)",
-      "description": "string (min length: 5)",
-      "durationMinutes": "number (min: 5)",
-      "releaseDate": "string",
-      "posterUrl": "string (optional)"
-  }
+  - title: "string" (movie title)
+  - description: "string" (movie description)
+  - durationMinutes: "number" (duration of the movie in minutes)
+  - releaseDate: "string" (release date in ISO format)
+  - posterUrl: "string" (URL to the movie poster)
 
 - Possible Responses:
-  - 201 Created: Movie was created successfully.
+  - 201 Created: Movie created successfully.
     Response:
     {
-        "message": "Movie Created"
+        "message": "Movie Created",
+        "title": "string",
+        "description": "string",
+        "durationMinutes": "number",
+        "releaseDate": "string",
+        "posterUrl": "string"
     }
-  - 400 Bad Request: The input data is invalid.
+  - 400 Bad Request: Invalid input.
     Response:
     {
         "message": "Invalid inputs"
@@ -52,28 +55,29 @@ api/v1/movies
   - 500 Internal Server Error: An error occurred while creating the movie.
     Response:
     {
-        "message": "Failed to create theatre",
+        "message": "Failed to create movie",
         "error": "Error message here"
     }
 
 3. GET /read/personal
 
-- Description: Fetches all movies created by the authenticated user.
+- Description: Retrieves movies created by the authenticated user.
 
 - Request Body: None
 
 - Possible Responses:
-  - 200 OK: A list of movies created by the user is returned.
+  - 200 OK: List of movies created by the authenticated user.
     Response:
     {
         "result": [
             {
+                "id": "number",
                 "title": "string",
                 "description": "string",
                 "durationMinutes": "number",
                 "releaseDate": "string",
                 "posterUrl": "string",
-                "id": "number (movie ID)"
+                "director": "string"
             },
             ...
         ]
@@ -83,37 +87,38 @@ api/v1/movies
     {
         "message": "You are not logged in."
     }
-  - 500 Internal Server Error: An error occurred while fetching the user's movies.
+  - 500 Internal Server Error: An error occurred while fetching movies.
     Response:
     {
-        "message": "Failed to create theatre",
+        "message": "Failed to fetch movies",
         "error": "Error message here"
     }
 
 4. GET /read/bulk
 
-- Description: Searches for movies by title based on a provided filter.
+- Description: Searches for movies by title. The user must be authenticated.
 
 - Expected Query Parameter:
-  - `filter`: "string (the filter to search for in movie titles)"
+  - filter: "string" (search term for movie title)
 
 - Possible Responses:
-  - 200 OK: A list of movies matching the filter is returned.
+  - 200 OK: List of movies matching the search term.
     Response:
     {
         "result": [
             {
+                "id": "number",
                 "title": "string",
                 "description": "string",
                 "durationMinutes": "number",
                 "releaseDate": "string",
                 "posterUrl": "string",
-                "id": "number (movie ID)"
+                "director": "string"
             },
             ...
         ]
     }
-  - 400 Bad Request: The filter is invalid or empty.
+  - 400 Bad Request: Invalid search term.
     Response:
     {
         "message": "Invalid Search"
@@ -123,31 +128,32 @@ api/v1/movies
     {
         "message": "You are not logged in."
     }
-  - 500 Internal Server Error: An error occurred while searching for movies.
+  - 500 Internal Server Error: An error occurred while fetching movies.
     Response:
     {
-        "message": "Failed to create theatre",
+        "message": "Failed to fetch movies",
         "error": "Error message here"
     }
 
 5. GET /read/display
 
-- Description: Fetches a limited number (10) of movie entries from the database.
+- Description: Retrieves a list of up to 10 movies. The user must be authenticated.
 
 - Request Body: None
 
 - Possible Responses:
-  - 200 OK: A list of movies is returned.
+  - 200 OK: List of up to 10 movies.
     Response:
     {
         "result": [
             {
+                "id": "number",
                 "title": "string",
                 "description": "string",
                 "durationMinutes": "number",
                 "releaseDate": "string",
                 "posterUrl": "string",
-                "id": "number (movie ID)"
+                "director": "string"
             },
             ...
         ]
@@ -157,40 +163,40 @@ api/v1/movies
     {
         "message": "You are not logged in."
     }
-  - 500 Internal Server Error: An error occurred while fetching the movies.
+  - 500 Internal Server Error: An error occurred while fetching movies.
     Response:
     {
-        "message": "Failed to create theatre",
+        "message": "Failed to fetch movies",
         "error": "Error message here"
     }
 
 6. DELETE /delete
 
-- Description: Deletes a movie created by the authenticated user.
+- Description: Deletes a movie by ID. The user must be authenticated.
 
 - Expected Query Parameter:
-  - `id`: "number (movie ID to be deleted)"
+  - id: "number" (movie ID)
 
 - Possible Responses:
-  - 200 OK: Movie was deleted successfully.
+  - 200 OK: Movie deleted successfully.
     Response:
     {
-        "message": "Theatre deleted successfully"
+        "message": "Movie deleted successfully"
     }
-  - 400 Bad Request: The movie ID is invalid or not provided.
+  - 400 Bad Request: Invalid movie ID provided.
     Response:
     {
-        "message": "Invalid theatre ID provided"
+        "message": "Invalid movie ID provided"
     }
   - 401 Unauthorized: User is not logged in.
     Response:
     {
         "message": "You are not logged in"
     }
-  - 404 Not Found: No movie was found for the given ID.
+  - 404 Not Found: No movie found for the given ID.
     Response:
     {
-        "message": "No theatre found for the given ID"
+        "message": "No movie found for the given ID"
     }
   - 500 Internal Server Error: An error occurred while deleting the movie.
     Response:

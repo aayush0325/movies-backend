@@ -11,6 +11,6 @@ export const createShowSchema = zod.object({
 
 
 export const bookSeatSchema = zod.object({
-    seatId:zod.number().int().positive(),
+    seatIds: zod.array(zod.number().int().positive()),
     showtimeId:zod.number().int().positive()
 })

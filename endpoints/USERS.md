@@ -1,5 +1,4 @@
-User API Documentation
-
+Users API Documentation
 
 api/v1/users
 
@@ -23,16 +22,16 @@ api/v1/users
 
 2. POST /create
 
-- Description: Creates a new user entry in the database. The user must be authenticated.
+- Description: Creates a new user entry. The user must be authenticated.
 
 - Expected Request Body:
   {
-      "firstName": "string (min length: 3)",
-      "lastName": "string (min length: 3)"
+      "firstName": "string",
+      "lastName": "string"
   }
 
 - Possible Responses:
-  - 201 Created: User was created successfully.
+  - 201 Created: User created successfully.
     Response:
     {
         "message": "User created successfully"
@@ -56,17 +55,17 @@ api/v1/users
 
 3. GET /read
 
-- Description: Fetches the details of the authenticated user.
+- Description: Fetches details of the authenticated user.
 
 - Request Body: None
 
 - Possible Responses:
-  - 200 OK: User data is returned.
+  - 200 OK: User details are returned.
     Response:
     {
         "firstName": "string",
         "lastName": "string",
-        "createdAt": "string (ISO date format)",
+        "createdAt": "string",
         "balance": "number"
     }
   - 401 Unauthorized: User is not logged in.
@@ -74,31 +73,59 @@ api/v1/users
     {
         "message": "You are not logged in"
     }
-  - 404 Not Found: User not found in the database.
+  - 404 Not Found: User not found.
     Response:
     {
         "message": "User Not Found"
     }
-  - 500 Internal Server Error: An error occurred while fetching the user data.
+  - 500 Internal Server Error: An error occurred while fetching user details.
     Response:
     {
         "message": "Failed to fetch user",
         "error": "Error message here"
     }
 
-4. PUT /update
+4. DELETE /delete
 
-- Description: Updates the details of the authenticated user. The user must be authenticated.
+- Description: Deletes the authenticated user.
+
+- Request Body: None
+
+- Possible Responses:
+  - 200 OK: User deleted successfully.
+    Response:
+    {
+        "message": "User deleted successfully"
+    }
+  - 401 Unauthorized: User is not logged in.
+    Response:
+    {
+        "message": "You are not logged in"
+    }
+  - 404 Not Found: User not found or already deleted.
+    Response:
+    {
+        "message": "User not found or already deleted"
+    }
+  - 500 Internal Server Error: An error occurred while deleting the user.
+    Response:
+    {
+        "message": "Failed to delete user",
+        "error": "Error message here"
+    }
+
+5. PUT /update
+
+- Description: Updates the details of the authenticated user.
 
 - Expected Request Body:
   {
-      "firstName": "string (min length: 3, optional)",
-      "lastName": "string (min length: 3, optional)",
-      "balance": "number (min: 5000, optional)"
+      "firstName": "string (optional)",
+      "lastName": "string (optional)"
   }
 
 - Possible Responses:
-  - 200 OK: User was updated successfully.
+  - 200 OK: User updated successfully.
     Response:
     {
         "message": "User updated successfully"
@@ -113,38 +140,40 @@ api/v1/users
     {
         "message": "You are not logged in"
     }
-  - 500 Internal Server Error: An error occurred while updating the user data.
+  - 500 Internal Server Error: An error occurred while updating the user.
     Response:
     {
         "message": "Failed to update user",
         "error": "Error message here"
     }
 
-5. DELETE /delete
+6. GET /bookings
 
-- Description: Deletes the authenticated user from the database.
+- Description: Fetches booking details for the authenticated user, including theatre name, movie name, and booked seats.
 
 - Request Body: None
 
 - Possible Responses:
-  - 200 OK: User was deleted successfully.
+  - 200 OK: List of bookings is returned.
     Response:
     {
-        "message": "User deleted successfully"
+        "bookings": [
+            {
+                "theatreName": "string",
+                "movieName": "string",
+                "seats": ["string", ...]
+            },
+            ...
+        ]
     }
   - 401 Unauthorized: User is not logged in.
     Response:
     {
         "message": "You are not logged in"
     }
-  - 404 Not Found: User not found in the database.
+  - 500 Internal Server Error: An error occurred while fetching bookings.
     Response:
     {
-        "message": "User not found or already deleted"
-    }
-  - 500 Internal Server Error: An error occurred while deleting the user.
-    Response:
-    {
-        "message": "Failed to delete user",
+        "message": "Failed to fetch bookings",
         "error": "Error message here"
     }
