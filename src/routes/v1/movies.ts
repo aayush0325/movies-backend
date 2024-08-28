@@ -55,11 +55,7 @@ moviesRouter.post('/create', async (c) => {
 
         return c.json({
             message: "Movie Created",
-            title: result[0].title,
-            description: result[0].description,
-            durationMinutes: result[0].durationMinutes,
-            releaseDate: result[0].releaseDate,
-            posterUrl: result[0].posterUrl
+            result
         }, 201); // Created
     } catch (e) {
         return c.json({

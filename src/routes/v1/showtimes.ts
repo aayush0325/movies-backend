@@ -1,6 +1,6 @@
 import { getAuth } from '@hono/clerk-auth';
 import { Hono } from 'hono';
-import { showtimes, theatres, seats, seatBookings, users } from '../../db/schema';
+import { showtimes, theatres, seats, seatBookings, users,movies } from '../../db/schema';
 import { createShowSchema, bookSeatSchema } from '../../zod/showtimes';
 import { drizzle } from 'drizzle-orm/d1';
 import { eq, and, or } from 'drizzle-orm';
@@ -64,6 +64,37 @@ showTimesRouter.post('/create', async (c) => {
   }
 });
 
+showTimesRouter.get('/read/home', async (c) => {
+  const limit = Number(c.req.query('limit')) || 10; // Default limit to 10 shows if not provided
+
+  try {
+    const db = drizzle(c.env.DB);
+
+    const result = await db.select({
+      showtimeId: showtimes.id,
+      startTime: showtimes.startTime,
+      endTime: showtimes.endTime,
+      price: showtimes.price,
+      movieTitle: movies.title,
+      posterUrl: movies.posterUrl,
+      theatreName: theatres.name
+    })
+    .from(showtimes)
+    .innerJoin(movies, eq(showtimes.movieId, movies.id))
+    .innerJoin(theatres, eq(showtimes.theatreId, theatres.id))
+    .orderBy(showtimes.startTime) // Order by the earliest shows first
+    .limit(limit); // Limit the number of results
+
+    return c.json(result, 200); // OK
+
+  } catch (e) {
+    return c.json({
+      message: 'Failed to fetch shows for home page',
+      error: (e as Error).message,
+    }, 500); // Internal Server Error
+  }
+});
+
 showTimesRouter.get('/read/personal', async (c) => {
   const auth = getAuth(c);
   if (!auth?.userId) {
@@ -75,7 +106,19 @@ showTimesRouter.get('/read/personal', async (c) => {
   try {
     const db = drizzle(c.env.DB);
 
-    const result = await db.select().from(showtimes).where(eq(showtimes.owner_id, auth.userId));
+    const result = await db.select({
+      showtimeId: showtimes.id,
+      startTime: showtimes.startTime,
+      endTime: showtimes.endTime,
+      price: showtimes.price,
+      movieTitle: movies.title,
+      posterUrl: movies.posterUrl, // Include posterUrl
+      theatreName: theatres.name
+    })
+    .from(showtimes)
+    .innerJoin(movies, eq(showtimes.movieId, movies.id))
+    .innerJoin(theatres, eq(showtimes.theatreId, theatres.id))
+    .where(eq(showtimes.owner_id, auth.userId));
 
     return c.json(result, 200); // OK
 
@@ -105,13 +148,56 @@ showTimesRouter.get('/read/theatre', async (c) => {
   try {
     const db = drizzle(c.env.DB);
 
-    const result = await db.select().from(showtimes).where(eq(showtimes.theatreId, id));
+    const result = await db.select({
+      showtimeId: showtimes.id,
+      startTime: showtimes.startTime,
+      endTime: showtimes.endTime,
+      price: showtimes.price,
+      movieTitle: movies.title,
+      posterUrl: movies.posterUrl, // Include posterUrl
+      theatreName: theatres.name
+    })
+    .from(showtimes)
+    .innerJoin(movies, eq(showtimes.movieId, movies.id))
+    .innerJoin(theatres, eq(showtimes.theatreId, theatres.id))
+    .where(eq(showtimes.theatreId, id));
 
     return c.json(result, 200); // OK
 
   } catch (e) {
     return c.json({
       message: 'Failed to fetch showtimes for theatre',
+      error: (e as Error).message,
+    }, 500); // Internal Server Error
+  }
+});
+
+showTimesRouter.delete('/delete/byUSER', async (c) => {
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json({
+      message: 'You are not logged in.',
+    }, 401); // Unauthorized
+  }
+
+  try {
+    const db = drizzle(c.env.DB);
+
+    const result = await db.delete(showtimes).where(eq(showtimes.owner_id, auth.userId));
+
+    if (result) {
+      return c.json({
+        message: 'Showtimes deleted successfully',
+      }, 200); // OK
+    } else {
+      return c.json({
+        message: 'No showtimes found for the given ID',
+      }, 404); // Not Found
+    }
+
+  } catch (e) {
+    return c.json({
+      message: 'Failed to delete showtimes',
       error: (e as Error).message,
     }, 500); // Internal Server Error
   }
