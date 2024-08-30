@@ -4,7 +4,7 @@ compatibility_date = "2024-08-10"
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
 database_name = "movies-db"
-database_id = "36d6a9cf-79c5-4729-b45c-bc90e7eefd2f"
+database_id = "2c5be14b-1b7c-4c60-889b-1ff5eadc185f"
 
 # [vars]
 # MY_VAR = "my-variable"
