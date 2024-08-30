@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { showtimes, theatres, seats, seatBookings, users,movies } from '../../db/schema';
 import { createShowSchema, bookSeatSchema } from '../../zod/showtimes';
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, and, or } from 'drizzle-orm';
+import { eq, and, or,like } from 'drizzle-orm';
 
 type Bindings = {
   DB: D1Database
@@ -64,6 +64,78 @@ showTimesRouter.post('/create', async (c) => {
   }
 });
 
+showTimesRouter.get('/read/search', async (c) => {
+  // Extract and validate the filter term from query parameters
+  const filter = c.req.query('filter')?.trim();
+  if (!filter) {
+    return c.json(
+      { message: 'Invalid Search: Filter term is required.' },
+      400 // Bad Request
+    );
+  }
+
+  // Optional: If you want to require authentication for searching showtimes
+  const auth = getAuth(c);
+  if (!auth?.userId) {
+    return c.json(
+      { message: 'You are not logged in.' },
+      401 // Unauthorized
+    );
+  }
+
+  try {
+    const db = drizzle(c.env.DB);
+
+    // Perform the search by filtering on multiple fields
+    const result = await db
+      .select({
+        showtimeId: showtimes.id,
+        startTime: showtimes.startTime,
+        endTime: showtimes.endTime,
+        price: showtimes.price,
+        movieTitle: movies.title,
+        posterUrl: movies.posterUrl,
+        theatreName: theatres.name,
+        description: movies.description,
+      })
+      .from(showtimes)
+      .innerJoin(movies, eq(showtimes.movieId, movies.id))
+      .innerJoin(theatres, eq(showtimes.theatreId, theatres.id))
+      .where(
+        or(
+          like(movies.title, `%${filter}%`),
+          like(theatres.name, `%${filter}%`),
+          like(movies.description, `%${filter}%`)
+        )
+      )
+      .orderBy(showtimes.startTime) // Order by the earliest shows first
+      .limit(10); // You can adjust the limit as needed
+
+    // Optionally, map the results to a desired format
+    const final = result.map((item) => ({
+      showtimeId: item.showtimeId,
+      startTime: item.startTime,
+      endTime: item.endTime,
+      price: item.price,
+      movieTitle: item.movieTitle,
+      posterUrl: item.posterUrl,
+      theatreName: item.theatreName,
+      description: item.description,
+    }));
+
+    return c.json({ results: final }, 200); // OK
+  } catch (e) {
+    console.error('Error fetching search results:', e);
+    return c.json(
+      {
+        message: 'Failed to fetch search results.',
+        error: (e as Error).message,
+      },
+      500 // Internal Server Error
+    );
+  }
+});
+
 showTimesRouter.get('/read/home', async (c) => {
   const limit = Number(c.req.query('limit')) || 10; // Default limit to 10 shows if not provided
 
@@ -77,7 +149,8 @@ showTimesRouter.get('/read/home', async (c) => {
       price: showtimes.price,
       movieTitle: movies.title,
       posterUrl: movies.posterUrl,
-      theatreName: theatres.name
+      theatreName: theatres.name,
+      description: movies.description
     })
     .from(showtimes)
     .innerJoin(movies, eq(showtimes.movieId, movies.id))
@@ -113,7 +186,8 @@ showTimesRouter.get('/read/personal', async (c) => {
       price: showtimes.price,
       movieTitle: movies.title,
       posterUrl: movies.posterUrl, // Include posterUrl
-      theatreName: theatres.name
+      theatreName: theatres.name,
+      description:movies.description
     })
     .from(showtimes)
     .innerJoin(movies, eq(showtimes.movieId, movies.id))
@@ -155,7 +229,8 @@ showTimesRouter.get('/read/theatre', async (c) => {
       price: showtimes.price,
       movieTitle: movies.title,
       posterUrl: movies.posterUrl, // Include posterUrl
-      theatreName: theatres.name
+      theatreName: theatres.name,
+      description:movies.description
     })
     .from(showtimes)
     .innerJoin(movies, eq(showtimes.movieId, movies.id))

@@ -71,7 +71,8 @@ Endpoints:
         "price": number,
         "movieTitle": string,
         "posterUrl": string,
-        "theatreName": string
+        "theatreName": string,
+        "description":string,
       },
       ...
     ]
